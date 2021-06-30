@@ -43,6 +43,7 @@
 
 #if LWIP_SOCKET /* don't build if not configured for use in lwipopts.h */
 
+#include <sys/time.h> /* for timval */
 #include "lwip/ip_addr.h"
 #include "lwip/err.h"
 #include "lwip/inet.h"
