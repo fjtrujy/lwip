@@ -47,7 +47,9 @@
 #include "lwip/dns.h"
 
 #include <string.h> /* memset */
+#ifndef _IOP
 #include <stdlib.h> /* atoi */
+#endif
 
 /** helper struct for gethostbyname_r to access the char* buffer */
 struct gethostbyname_r_helper {

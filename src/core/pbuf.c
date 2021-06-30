@@ -351,7 +351,12 @@ pbuf_alloc(pbuf_layer layer, u16_t length, pbuf_type type)
     break;
   case PBUF_RAM:
     {
+#if (!defined(_IOP) && !defined(_EE))
       mem_size_t alloc_len = LWIP_MEM_ALIGN_SIZE(SIZEOF_STRUCT_PBUF + offset) + LWIP_MEM_ALIGN_SIZE(length);
+#else
+      //Do not align this, otherwise the final address will not be aligned.
+      mem_size_t alloc_len = LWIP_MEM_ALIGN_SIZE(SIZEOF_STRUCT_PBUF) + offset + LWIP_MEM_ALIGN_SIZE(length);
+#endif
       
       /* bug #50040: Check for integer overflow when calculating alloc_len */
       if (alloc_len < LWIP_MEM_ALIGN_SIZE(length)) {
@@ -366,13 +371,20 @@ pbuf_alloc(pbuf_layer layer, u16_t length, pbuf_type type)
       return NULL;
     }
     /* Set up internal structure of the pbuf. */
+#if (!defined(_IOP) && !defined(_EE))
     p->payload = LWIP_MEM_ALIGN((void *)((u8_t *)p + SIZEOF_STRUCT_PBUF + offset));
+#else
+    //Do not align this, otherwise the final address will not be aligned.
+    p->payload = (void *)((u8_t *)p + SIZEOF_STRUCT_PBUF + offset);
+#endif
     p->len = p->tot_len = length;
     p->next = NULL;
     p->type = type;
 
+#if (!defined(_IOP) && !defined(_EE))
     LWIP_ASSERT("pbuf_alloc: pbuf->payload properly aligned",
            ((mem_ptr_t)p->payload % MEM_ALIGNMENT) == 0);
+#endif
     break;
   /* pbuf references existing (non-volatile static constant) ROM payload? */
   case PBUF_ROM:
@@ -461,7 +473,12 @@ pbuf_alloced_custom(pbuf_layer l, u16_t length, pbuf_type type, struct pbuf_cust
 
   p->pbuf.next = NULL;
   if (payload_mem != NULL) {
+#if (!defined(_IOP) && !defined(_EE))
     p->pbuf.payload = (u8_t *)payload_mem + LWIP_MEM_ALIGN_SIZE(offset);
+#else
+    //Do not align this, otherwise the final address will not be aligned.
+    p->pbuf.payload = (u8_t *)payload_mem + offset;
+#endif
   } else {
     p->pbuf.payload = NULL;
   }
